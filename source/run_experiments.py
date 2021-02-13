@@ -333,14 +333,14 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, prfmeasure, runm
         XD_train = XD[trrows]
         XT_train = XT[trcols]
 
-        train_drugs, train_prots, train_Y = prepare_interaction_pairs(XD, XT, Y, trrows, trcols)
+      #  train_drugs, train_prots, train_Y = prepare_interaction_pairs(XD, XT, Y, trrows, trcols)
 
         terows = label_row_inds[valinds]
         tecols = label_col_inds[valinds]
         # print("terows", str(terows), str(len(terows)))
         # print("tecols", str(tecols), str(len(tecols)))
 
-        val_drugs, val_prots, val_Y = prepare_interaction_pairs(XD, XT, Y, terows, tecols)
+      #  val_drugs, val_prots, val_Y = prepare_interaction_pairs(XD, XT, Y, terows, tecols)
 
         pointer = 0
 
@@ -354,25 +354,24 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, prfmeasure, runm
 
                     gridmodel = runmethod(FLAGS, param1value, param2value, param3value)
                     es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15)
-                    gridres = gridmodel.fit(([np.array(train_drugs), np.array(train_prots)]), np.array(train_Y),
+                    gridres = gridmodel.fit(([XD, np.array(XT)]), np.array(Y),
                                             batch_size=batchsz, epochs=epoch,
-                                            validation_data=(
-                                            ([np.array(val_drugs), np.array(val_prots)]), np.array(val_Y)),
+
                                             shuffle=False, callbacks=[es])
 
-                    predicted_labels = gridmodel.predict([np.array(val_drugs), np.array(val_prots)])
-                    loss, rperf2 = gridmodel.evaluate(([np.array(val_drugs), np.array(val_prots)]), np.array(val_Y),
-                                                      verbose=0)
-                    rperf = prfmeasure(val_Y, predicted_labels)
-                    rperf = rperf[0]
+                   # predicted_labels = gridmodel.predict([np.array(val_drugs), np.array(val_prots)])
+                    #loss, rperf2 = gridmodel.evaluate(([np.array(val_drugs), np.array(val_prots)]), np.array(val_Y),
+                   #                                   verbose=0)
+                    #rperf = prfmeasure(val_Y, predicted_labels)
+                   # rperf = rperf[0]
 
-                    logging("P1 = %d,  P2 = %d, P3 = %d, Fold = %d, CI-i = %f, CI-ii = %f, MSE = %f" %
-                            (param1ind, param2ind, param3ind, foldind, rperf, rperf2, loss), FLAGS)
+                  #  logging("P1 = %d,  P2 = %d, P3 = %d, Fold = %d, CI-i = %f, CI-ii = %f, MSE = %f" %
+                  #          (param1ind, param2ind, param3ind, foldind, rperf, rperf2, loss), FLAGS)
 
                     plotLoss(gridres, param1ind, param2ind, param3ind, foldind)
 
-                    all_predictions[pointer][foldind] = rperf  # TODO FOR EACH VAL SET allpredictions[pointer][foldind]
-                    all_losses[pointer][foldind] = loss
+                    #all_predictions[pointer][foldind] = rperf  # TODO FOR EACH VAL SET allpredictions[pointer][foldind]
+                    #all_losses[pointer][foldind] = loss
 
                     pointer += 1
 
@@ -535,6 +534,9 @@ def myExperiment(FLAGS, perfmeasure, deepmethod, foldcount=6):
 
     FLAGS.drug_count = drugcount
     FLAGS.target_count = targetcount
+
+    label_row_inds, label_col_inds = np.where(
+        np.isnan(Y) == False)  # basically finds the point address of affinity [x,y]
 
     if not os.path.exists(figdir):
         os.makedirs(figdir)
