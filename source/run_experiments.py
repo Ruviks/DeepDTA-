@@ -535,19 +535,33 @@ def myExperiment(FLAGS, perfmeasure, deepmethod, foldcount=6):
     FLAGS.drug_count = drugcount
     FLAGS.target_count = targetcount
 
-    label_row_inds, label_col_inds = np.where(
-        np.isnan(Y) == False)  # basically finds the point address of affinity [x,y]
-
     if not os.path.exists(figdir):
         os.makedirs(figdir)
 
     print(FLAGS.log_dir)
-    S1_avgperf, S1_avgloss, S1_teststd = nfold_1_2_3_setting_sample(XD, XT, Y, label_row_inds, label_col_inds,
-                                                                    perfmeasure, deepmethod, FLAGS, dataset)
 
-    logging("Setting " + str(FLAGS.problem_type), FLAGS)
-    logging("avg_perf = %.5f,  avg_mse = %.5f, std = %.5f" %
-            (S1_avgperf, S1_avgloss, S1_teststd), FLAGS)
+    paramset1 = FLAGS.num_windows  # [32]#[32,  512] #[32, 128]  # filter numbers
+    paramset2 = FLAGS.smi_window_lengths  # [4, 8]#[4,  32] #[4,  8] #filter length smi
+    paramset3 = FLAGS.seq_window_lengths  # [8, 12]#[64,  256] #[64, 192]#[8, 192, 384]
+    epoch = FLAGS.num_epoch  # 100
+    batchsz = FLAGS.batch_size  # 256
+
+    logging("---Parameter Search-----", FLAGS)
+
+    gridmodel = deepmethod(FLAGS, 32, 4, 8)
+    es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15)
+    gridres = gridmodel.fit(([XD, np.array(XT)]), np.array(Y),
+                                            batch_size=batchsz, epochs=epoch,
+                                            shuffle=False, callbacks=[es])
+
+
+
+
+
+
+
+
+
 
 
 def run_regression(FLAGS):
