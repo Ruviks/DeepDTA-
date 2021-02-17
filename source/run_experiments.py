@@ -557,7 +557,7 @@ def myExperiment(FLAGS, perfmeasure, deepmethod, foldcount=6):
                                 validation_data=(
                                     ([np.array(XD[test_index]), np.array(XT[test_index])]), np.array(Y[test_index])),
                                 shuffle=False, callbacks=[es])
-
+    gridmodel.evaluate(([np.array(XD), np.array(XT)]), np.array(Y), verbose=2)
 
 
 
