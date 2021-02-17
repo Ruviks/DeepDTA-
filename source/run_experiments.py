@@ -35,7 +35,7 @@ from keras.layers import Input, Embedding, Dense
 from keras.models import Model
 from keras.utils import plot_model
 from keras.callbacks import EarlyStopping
-
+from sklearn.model_selection import KFold
 import os
 import time
 import matplotlib.pyplot as plt
@@ -340,7 +340,7 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, prfmeasure, runm
         # print("terows", str(terows), str(len(terows)))
         # print("tecols", str(tecols), str(len(tecols)))
 
-      #  val_drugs, val_prots, val_Y = prepare_interaction_pairs(XD, XT, Y, terows, tecols)
+        val_drugs, val_prots, val_Y = prepare_interaction_pairs(XD, XT, Y, terows, tecols)
 
         pointer = 0
 
@@ -356,7 +356,8 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, prfmeasure, runm
                     es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15)
                     gridres = gridmodel.fit(([XD, np.array(XT)]), np.array(Y),
                                             batch_size=batchsz, epochs=epoch,
-
+                                            validation_data=(
+                                            ([np.array(val_drugs), np.array(val_prots)]), np.array(val_Y)),
                                             shuffle=False, callbacks=[es])
 
                    # predicted_labels = gridmodel.predict([np.array(val_drugs), np.array(val_prots)])
@@ -547,19 +548,15 @@ def myExperiment(FLAGS, perfmeasure, deepmethod, foldcount=6):
     batchsz = FLAGS.batch_size  # 256
 
     logging("---Parameter Search-----", FLAGS)
-
+    kf = KFold(n_splits=3)
     gridmodel = deepmethod(FLAGS, 32, 4, 8)
     es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15)
-    gridres = gridmodel.fit(([XD, np.array(XT)]), np.array(Y),
-                                            batch_size=batchsz, epochs=epoch,
-                                            shuffle=False, callbacks=[es])
-
-
-
-
-
-
-
+    for train_index, test_index in kf.split(XD):
+        gridres = gridmodel.fit(([XD[train_index], np.array(XT[train_index])]), np.array(Y[train_index]),
+                                batch_size=batchsz, epochs=epoch,
+                                validation_data=(
+                                    ([np.array(XD[test_index]), np.array(XT[test_index])]), np.array(Y[test_index])),
+                                shuffle=False, callbacks=[es])
 
 
 
