@@ -333,7 +333,7 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, prfmeasure, runm
         XD_train = XD[trrows]
         XT_train = XT[trcols]
 
-      #  train_drugs, train_prots, train_Y = prepare_interaction_pairs(XD, XT, Y, trrows, trcols)
+        #  train_drugs, train_prots, train_Y = prepare_interaction_pairs(XD, XT, Y, trrows, trcols)
 
         terows = label_row_inds[valinds]
         tecols = label_col_inds[valinds]
@@ -357,22 +357,22 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, prfmeasure, runm
                     gridres = gridmodel.fit(([XD, np.array(XT)]), np.array(Y),
                                             batch_size=batchsz, epochs=epoch,
                                             validation_data=(
-                                            ([np.array(val_drugs), np.array(val_prots)]), np.array(val_Y)),
+                                                ([np.array(val_drugs), np.array(val_prots)]), np.array(val_Y)),
                                             shuffle=False, callbacks=[es])
 
-                   # predicted_labels = gridmodel.predict([np.array(val_drugs), np.array(val_prots)])
-                    #loss, rperf2 = gridmodel.evaluate(([np.array(val_drugs), np.array(val_prots)]), np.array(val_Y),
-                   #                                   verbose=0)
-                    #rperf = prfmeasure(val_Y, predicted_labels)
-                   # rperf = rperf[0]
+                    # predicted_labels = gridmodel.predict([np.array(val_drugs), np.array(val_prots)])
+                    # loss, rperf2 = gridmodel.evaluate(([np.array(val_drugs), np.array(val_prots)]), np.array(val_Y),
+                    #                                   verbose=0)
+                    # rperf = prfmeasure(val_Y, predicted_labels)
+                    # rperf = rperf[0]
 
-                  #  logging("P1 = %d,  P2 = %d, P3 = %d, Fold = %d, CI-i = %f, CI-ii = %f, MSE = %f" %
-                  #          (param1ind, param2ind, param3ind, foldind, rperf, rperf2, loss), FLAGS)
+                    #  logging("P1 = %d,  P2 = %d, P3 = %d, Fold = %d, CI-i = %f, CI-ii = %f, MSE = %f" %
+                    #          (param1ind, param2ind, param3ind, foldind, rperf, rperf2, loss), FLAGS)
 
                     plotLoss(gridres, param1ind, param2ind, param3ind, foldind)
 
-                    #all_predictions[pointer][foldind] = rperf  # TODO FOR EACH VAL SET allpredictions[pointer][foldind]
-                    #all_losses[pointer][foldind] = loss
+                    # all_predictions[pointer][foldind] = rperf  # TODO FOR EACH VAL SET allpredictions[pointer][foldind]
+                    # all_losses[pointer][foldind] = loss
 
                     pointer += 1
 
@@ -557,8 +557,8 @@ def myExperiment(FLAGS, perfmeasure, deepmethod, foldcount=6):
                                 validation_data=(
                                     ([np.array(XD[test_index]), np.array(XT[test_index])]), np.array(Y[test_index])),
                                 shuffle=False, callbacks=[es])
+    XD, XT, Y = dataset.parse_data_csv(FLAGS, False)
     gridmodel.evaluate(([np.array(XD), np.array(XT)]), np.array(Y), verbose=2)
-
 
 
 def run_regression(FLAGS):
