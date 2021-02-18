@@ -5,7 +5,7 @@ import random as rn
 
 # import matplotlib
 # matplotlib.use('Agg')
-from sys import path
+
 
 import numpy as np
 import tensorflow as tf
@@ -549,7 +549,7 @@ def myExperiment(FLAGS, perfmeasure, deepmethod, foldcount=6):
     batchsz = FLAGS.batch_size  # 256
 
     logging("---Parameter Search-----", FLAGS)
-    if path.exists('my_model'):
+    if os.path.exists('my_model'):
         gridmodel = keras.models.load_model("my_model")
     else:
         gridmodel = deepmethod(FLAGS, 32, 4, 8)
