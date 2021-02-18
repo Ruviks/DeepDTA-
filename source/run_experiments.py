@@ -35,7 +35,6 @@ from keras.layers import Input, Embedding, Dense
 from keras.models import Model
 from keras.utils import plot_model
 from keras.callbacks import EarlyStopping
-from sklearn.model_selection import KFold
 import os
 import time
 import matplotlib.pyplot as plt
@@ -551,11 +550,9 @@ def myExperiment(FLAGS, perfmeasure, deepmethod, foldcount=6):
     kf = KFold(n_splits=3)
     gridmodel = deepmethod(FLAGS, 32, 4, 8)
     es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15)
-    for train_index, test_index in kf.split(XD):
-        gridres = gridmodel.fit(([XD[train_index], np.array(XT[train_index])]), np.array(Y[train_index]),
+
+    gridres = gridmodel.fit(([XD, np.array(XT)]), np.array(Y),
                                 batch_size=batchsz, epochs=epoch,
-                                validation_data=(
-                                    ([np.array(XD[test_index]), np.array(XT[test_index])]), np.array(Y[test_index])),
                                 shuffle=False, callbacks=[es])
     XD, XT, Y = dataset.parse_data_csv(FLAGS, False)
     gridmodel.evaluate(([np.array(XD), np.array(XT)]), np.array(Y), verbose=2)
