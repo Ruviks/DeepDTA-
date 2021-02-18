@@ -5,6 +5,8 @@ import random as rn
 
 # import matplotlib
 # matplotlib.use('Agg')
+from sys import path
+
 import numpy as np
 import tensorflow as tf
 
@@ -547,12 +549,15 @@ def myExperiment(FLAGS, perfmeasure, deepmethod, foldcount=6):
     batchsz = FLAGS.batch_size  # 256
 
     logging("---Parameter Search-----", FLAGS)
-    gridmodel = deepmethod(FLAGS, 32, 4, 8)
-    es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15)
-
-    gridres = gridmodel.fit(([XD, np.array(XT)]), np.array(Y),
+    if path.exists('my_model'):
+        gridmodel = keras.models.load_model("my_model")
+    else:
+        gridmodel = deepmethod(FLAGS, 32, 4, 8)
+        es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15)
+        gridres = gridmodel.fit(([XD, np.array(XT)]), np.array(Y),
                                 batch_size=batchsz, epochs=epoch,
                                 shuffle=False, callbacks=[es])
+        gridmodel.save("my_model")
     XD, XT, Y = dataset.parse_data_csv(FLAGS, False)
     gridmodel.evaluate(([np.array(XD), np.array(XT)]), np.array(Y), verbose=2)
 
