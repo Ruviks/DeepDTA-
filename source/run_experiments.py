@@ -547,7 +547,6 @@ def myExperiment(FLAGS, perfmeasure, deepmethod, foldcount=6):
     batchsz = FLAGS.batch_size  # 256
 
     logging("---Parameter Search-----", FLAGS)
-    kf = KFold(n_splits=3)
     gridmodel = deepmethod(FLAGS, 32, 4, 8)
     es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15)
 
