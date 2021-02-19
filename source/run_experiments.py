@@ -523,24 +523,8 @@ def myExperiment(FLAGS, perfmeasure, deepmethod, foldcount=6):
     FLAGS.charseqset_size = dataset.charseqset_size
     FLAGS.charsmiset_size = dataset.charsmiset_size
 
-    XD, XT, Y = dataset.parse_data_csv(FLAGS)
+    gridmodel = deepmethod(FLAGS, 32, 4, 8)
 
-    XD = np.asarray(XD)
-    XT = np.asarray(XT)
-    Y = np.asarray(Y)
-
-    drugcount = XD.shape[0]
-    print(drugcount)
-    targetcount = XT.shape[0]
-    print(targetcount)
-
-    FLAGS.drug_count = drugcount
-    FLAGS.target_count = targetcount
-
-    if not os.path.exists(figdir):
-        os.makedirs(figdir)
-
-    print(FLAGS.log_dir)
 
     paramset1 = FLAGS.num_windows  # [32]#[32,  512] #[32, 128]  # filter numbers
     paramset2 = FLAGS.smi_window_lengths  # [4, 8]#[4,  32] #[4,  8] #filter length smi
@@ -550,16 +534,31 @@ def myExperiment(FLAGS, perfmeasure, deepmethod, foldcount=6):
 
     logging("---Parameter Search-----", FLAGS)
     if os.path.exists('my_model'):
-        gridmodel = keras.models.load_model("my_model")
+        gridmodel.load_weights("my_model")
     else:
-        gridmodel = deepmethod(FLAGS, 32, 4, 8)
+        XD, XT, Y = dataset.parse_data_csv(FLAGS)
+        XD = np.asarray(XD)
+        XT = np.asarray(XT)
+        Y = np.asarray(Y)
+        drugcount = XD.shape[0]
+        print(drugcount)
+        targetcount = XT.shape[0]
+        print(targetcount)
+        FLAGS.drug_count = drugcount
+        FLAGS.target_count = targetcount
+        if not os.path.exists(figdir):
+            os.makedirs(figdir)
+
+        print(FLAGS.log_dir)
         es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15)
         gridres = gridmodel.fit(([XD, np.array(XT)]), np.array(Y),
                                 batch_size=batchsz, epochs=epoch,
                                 shuffle=False, callbacks=[es])
         gridmodel.save("my_model")
+
     XD, XT, Y = dataset.parse_data_csv(FLAGS, False)
-    gridmodel.evaluate(([np.array(XD), np.array(XT)]), np.array(Y), verbose=2)
+    results = gridmodel.evaluate(([np.array(XD), np.array(XT)]), np.array(Y), verbose=2)
+    print("test loss, test acc:", results)
 
 
 def run_regression(FLAGS):
